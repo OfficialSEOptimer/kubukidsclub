@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marginalia — free downloads</title>
+<meta name="description" content="Browse free PDF downloads. Preview any title, then download or print it.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,600;0,700;1,500&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --forest: #1f3a2e;
+    --forest-light: #2c4f3d;
+    --paper: #f1e9da;
+    --card: #fffdf6;
+    --ink: #241f1a;
+    --oak: #7c5a3d;
+    --stamp: #a23e2d;
+    --stamp-dark: #8a3324;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    background-image: radial-gradient(rgba(124,90,61,0.12) 1px, transparent 1px);
+    background-size: 20px 20px;
+    color: var(--ink);
+    font-family: "Source Serif 4", Georgia, serif;
+    line-height: 1.55;
+  }
+
+  .site-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.5rem;
+    padding: 1.25rem 1.75rem;
+    background: var(--forest);
+  }
+  .wordmark {
+    font-family: "Fraunces", serif;
+    font-style: italic;
+    font-weight: 600;
+    font-size: 1.6rem;
+    color: var(--paper);
+    text-decoration: none;
+  }
+  .header-note {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.8rem;
+    color: rgba(241,233,218,0.75);
+  }
+
+  main { max-width: 1080px; margin: 0 auto; padding: 0 1.75rem; }
+
+  .hero { padding: 3rem 0 2rem; max-width: 640px; }
+  .hero h1 {
+    font-family: "Fraunces", serif;
+    font-weight: 600;
+    font-size: clamp(1.8rem, 4vw, 2.7rem);
+    line-height: 1.15;
+    margin: 0 0 1rem;
+  }
+  .hero-sub { font-size: 1.02rem; max-width: 56ch; margin: 0 0 2rem; }
+
+  .finder { display: flex; flex-direction: column; gap: 0.9rem; margin-bottom: 1.5rem; }
+  #searchInput {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.95rem;
+    padding: 0.75rem 0.9rem;
+    border: none;
+    border-bottom: 2px solid var(--oak);
+    background: transparent;
+    color: var(--ink);
+    width: 100%;
+    max-width: 420px;
+  }
+  #searchInput::placeholder { color: rgba(36,31,26,0.45); }
+  #searchInput:focus { outline: 2px solid var(--forest); outline-offset: 2px; }
+
+  .chip-row { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .chip {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.8rem;
+    padding: 0.4rem 0.8rem;
+    background: transparent;
+    border: 1px solid var(--oak);
+    color: var(--oak);
+    cursor: pointer;
+    border-radius: 3px;
+  }
+  .chip:hover { background: rgba(124,90,61,0.08); }
+  .chip.active { background: var(--forest); border-color: var(--forest); color: var(--paper); }
+  .chip:focus-visible { outline: 2px solid var(--forest); outline-offset: 2px; }
+
+  .catalog {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 1.25rem 1rem;
+    padding: 0.5rem 0 3rem;
+  }
+
+  .book-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    background: none;
+    border: none;
+    padding: 0;
+    text-align: left;
+    cursor: pointer;
+    font: inherit;
+    color: inherit;
+  }
+  .book-card:focus-visible { outline: 2px solid var(--forest); outline-offset: 3px; }
+
+  .cover-wrap {
+    position: relative;
+    aspect-ratio: 3 / 4;
+    background: var(--card);
+    border: 1px solid rgba(124,90,61,0.4);
+    overflow: hidden;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .cover-wrap img,
+  .cover-wrap canvas {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.2s ease;
+  }
+  .book-card:hover .cover-wrap img,
+  .book-card:hover .cover-wrap canvas { transform: scale(1.03); }
+
+  .cover-fallback-text { display: none; }
+  .cover-wrap.cover-fallback .cover-fallback-text {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    height: 100%;
+    width: 100%;
+    padding: 1rem;
+    font-family: "Fraunces", serif;
+    font-weight: 600;
+    font-size: 1rem;
+    background: var(--forest-light);
+    color: var(--paper);
+  }
+
+  .badge-free {
+    position: absolute;
+    top: 0.5rem;
+    left: 0.5rem;
+    background: var(--stamp);
+    color: var(--paper);
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.62rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 3px;
+    transform: rotate(-3deg);
+    z-index: 2;
+  }
+
+  .book-meta { display: flex; flex-direction: column; gap: 0.1rem; }
+  .book-title {
+    font-family: "Fraunces", serif;
+    font-weight: 600;
+    font-size: 1rem;
+    line-height: 1.25;
+  }
+  .book-author {
+    font-style: italic;
+    color: var(--oak);
+    font-size: 0.85rem;
+  }
+
+  .empty-state {
+    font-family: "Source Serif 4", serif;
+    font-style: italic;
+    color: var(--oak);
+    text-align: center;
+    padding: 2rem 0 4rem;
+  }
+
+  .site-footer {
+    background: var(--forest);
+    color: rgba(241,233,218,0.85);
+    text-align: center;
+    padding: 1.5rem;
+    font-size: 0.85rem;
+  }
+
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(31,58,46,0.78);
+    backdrop-filter: blur(2px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.25rem;
+    z-index: 100;
+  }
+  .modal-overlay[hidden] { display: none; }
+
+  .modal-panel {
+    background: var(--card);
+    width: 100%;
+    max-width: 720px;
+    max-height: 90vh;
+    overflow: auto;
+    border-radius: 4px;
+    border: 1px solid var(--oak);
+    display: flex;
+    flex-direction: column;
+    animation: modal-in 0.18s ease;
+  }
+  @keyframes modal-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.1rem 1.25rem 0.5rem;
+  }
+  .modal-title-group h2 {
+    font-family: "Fraunces", serif;
+    font-weight: 600;
+    font-size: 1.3rem;
+    margin: 0 0 0.15rem;
+  }
+  .modal-title-group p {
+    font-style: italic;
+    color: var(--oak);
+    font-size: 0.9rem;
+    margin: 0;
+  }
+  .modal-close {
+    background: none;
+    border: 1px solid var(--oak);
+    border-radius: 3px;
+    font-size: 1.1rem;
+    line-height: 1;
+    padding: 0.3rem 0.6rem;
+    cursor: pointer;
+    color: var(--ink);
+    font-family: "IBM Plex Mono", monospace;
+  }
+  .modal-close:hover { background: rgba(124,90,61,0.08); }
+
+  .modal-frame-wrap { padding: 0.5rem 1.25rem; }
+  .modal-frame-wrap iframe {
+    width: 100%;
+    height: 58vh;
+    border: 1px solid rgba(124,90,61,0.4);
+    background: var(--paper);
+  }
+
+  .modal-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+    padding: 1rem 1.25rem 1.25rem;
+  }
+  .btn {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.85rem;
+    text-decoration: none;
+    padding: 0.55rem 0.9rem;
+    border-radius: 3px;
+    border: 1px solid var(--ink);
+    color: var(--ink);
+    transition: transform 0.15s ease, background 0.15s ease;
+    display: inline-block;
+  }
+  .btn:hover { background: rgba(36,31,26,0.06); }
+  .btn-download {
+    background: var(--stamp);
+    border-color: var(--stamp-dark);
+    color: var(--paper);
+    transform: rotate(-2deg);
+  }
+  .btn-download:hover { background: var(--stamp-dark); transform: rotate(0deg); }
+  .btn:focus-visible { outline: 2px solid var(--forest); outline-offset: 2px; }
+  .modal-hint { font-size: 0.78rem; color: rgba(36,31,26,0.6); }
+
+  @media (max-width: 640px) {
+    .site-header { flex-direction: column; align-items: flex-start; }
+    .hero { padding-top: 2rem; }
+    .modal-frame-wrap iframe { height: 46vh; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; scroll-behavior: auto !important; animation: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <a class="wordmark" href="#top">Marginalia</a>
+  <span class="header-note">a small library, always open</span>
+</header>
+
+<main id="top">
+  <section class="hero">
+    <h1>Free to read, download, and print</h1>
+    <p class="hero-sub">Tap a cover to preview the whole thing, then download it if you want to keep it.</p>
+
+    <div class="finder">
+      <input type="search" id="searchInput" placeholder="Search by title or author…" aria-label="Search">
+      <div class="chip-row" id="chipRow"></div>
+    </div>
+  </section>
+
+  <section class="catalog" id="catalog" aria-live="polite"></section>
+
+  <p class="empty-state" id="emptyState" hidden>Nothing matches that. Try a different word, or clear your filters.</p>
+</main>
+
+<footer class="site-footer">
+  <p>Marginalia is a free reading room. Titles are shared for personal, non-commercial use.</p>
+</footer>
+
+<div class="modal-overlay" id="modalOverlay" hidden>
+  <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-header">
+      <div class="modal-title-group">
+        <h2 id="modalTitle"></h2>
+        <p id="modalAuthor"></p>
+      </div>
+      <button class="modal-close" id="modalClose" aria-label="Close preview">Close ✕</button>
+    </div>
+    <div class="modal-frame-wrap">
+      <iframe id="modalFrame" title="PDF preview" loading="lazy"></iframe>
+    </div>
+    <div class="modal-actions">
+      <a class="btn btn-download" id="modalDownload" href="#" download>Download PDF</a>
+      <span class="modal-hint">Opens your browser's own PDF viewer — print from there too.</span>
+    </div>
+  </div>
+</div>
+
+<!-- pdf.js: used only to draw each PDF's first page as its cover thumbnail -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+<script>
+/* =====================================================================
+   MARGINALIA — book list
+
+   Add a book by copying one block below. Each one needs a "file" path
+   pointing to a PDF you've uploaded into this repo (e.g. in a /books
+   folder next to this index.html). That single file powers the cover
+   thumbnail (auto-drawn from the PDF's first page), the click-to-preview,
+   and the download button — nothing else to upload.
+
+   If you'd rather use your own designed cover image instead of an
+   auto-generated one, add a "cover" field with a path to a jpg/png —
+   when present it's used instead of rendering the PDF's first page.
+   ===================================================================== */
+
+const books = [
+  {
+    title: "The Quiet Hour",
+    author: "Elena Marsh",
+    genre: "Fiction",
+    file: "books/the-quiet-hour.pdf"
+  },
+  {
+    title: "Notes on Paying Attention",
+    author: "Tomas Reyes",
+    genre: "Essays",
+    file: "books/notes-on-paying-attention.pdf"
+  },
+  {
+    title: "Small Weather",
+    author: "Adaeze Nwosu",
+    genre: "Poetry",
+    file: "books/small-weather.pdf"
+  },
+  {
+    title: "The Patient Cook",
+    author: "Marguerite Dulac",
+    genre: "Guides",
+    file: "books/the-patient-cook.pdf"
+  },
+  {
+    title: "Everything Left Unsaid",
+    author: "Elena Marsh",
+    genre: "Fiction",
+    file: "books/everything-left-unsaid.pdf"
+  },
+  {
+    title: "A Short History of Almost Waiting",
+    author: "Priya Vance",
+    genre: "Essays",
+    file: "books/a-short-history-of-almost-waiting.pdf"
+  }
+];
+
+/* ===================== everything below is rendering logic — no need to edit ===================== */
+
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+let activeGenre = "all";
+let lastFocused = null;
+
+const catalogEl = document.getElementById("catalog");
+const emptyEl = document.getElementById("emptyState");
+const overlay = document.getElementById("modalOverlay");
+const modalTitle = document.getElementById("modalTitle");
+const modalAuthor = document.getElementById("modalAuthor");
+const modalFrame = document.getElementById("modalFrame");
+const modalDownload = document.getElementById("modalDownload");
+const modalClose = document.getElementById("modalClose");
+
+document.addEventListener("DOMContentLoaded", () => {
+  renderChips();
+  renderCards(books);
+  document.getElementById("searchInput").addEventListener("input", applyFilters);
+  modalClose.addEventListener("click", closeModal);
+  overlay.addEventListener("click", e => { if (e.target === overlay) closeModal(); });
+});
+
+function renderChips() {
+  const row = document.getElementById("chipRow");
+  const genres = ["all", ...new Set(books.map(b => b.genre))];
+  row.innerHTML = "";
+  genres.forEach(g => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "chip" + (g === "all" ? " active" : "");
+    btn.textContent = g === "all" ? "All" : g;
+    btn.addEventListener("click", () => {
+      activeGenre = g;
+      [...row.children].forEach(c => c.classList.toggle("active", c === btn));
+      applyFilters();
+    });
+    row.appendChild(btn);
+  });
+}
+
+function applyFilters() {
+  const q = document.getElementById("searchInput").value.trim().toLowerCase();
+  const filtered = books.filter(b => {
+    const matchesGenre = activeGenre === "all" || b.genre === activeGenre;
+    const matchesQuery = !q || b.title.toLowerCase().includes(q) || b.author.toLowerCase().includes(q);
+    return matchesGenre && matchesQuery;
+  });
+  renderCards(filtered);
+}
+
+function renderCards(list) {
+  catalogEl.innerHTML = "";
+  if (list.length === 0) {
+    emptyEl.hidden = false;
+    return;
+  }
+  emptyEl.hidden = true;
+
+  list.forEach(b => {
+    const card = document.createElement("button");
+    card.type = "button";
+    card.className = "book-card";
+    card.innerHTML = `
+      <span class="cover-wrap">
+        <span class="badge-free">Free download</span>
+        <span class="cover-fallback-text">${b.title}</span>
+      </span>
+      <span class="book-meta">
+        <span class="book-title">${b.title}</span>
+        <span class="book-author">by ${b.author}</span>
+      </span>
+    `;
+    const coverWrap = card.querySelector(".cover-wrap");
+
+    if (b.cover) {
+      const img = document.createElement("img");
+      img.src = b.cover;
+      img.alt = "Cover of " + b.title;
+      img.loading = "lazy";
+      img.addEventListener("error", () => coverWrap.classList.add("cover-fallback"));
+      coverWrap.prepend(img);
+    } else {
+      const canvas = document.createElement("canvas");
+      coverWrap.prepend(canvas);
+      renderPdfCover(b.file, canvas).then(ok => {
+        if (!ok) {
+          canvas.remove();
+          coverWrap.classList.add("cover-fallback");
+        }
+      });
+    }
+
+    card.addEventListener("click", () => openModal(b));
+    catalogEl.appendChild(card);
+  });
+}
+
+async function renderPdfCover(fileUrl, canvas) {
+  try {
+    const pdf = await pdfjsLib.getDocument(fileUrl).promise;
+    const page = await pdf.getPage(1);
+    const unscaled = page.getViewport({ scale: 1 });
+    const scale = 500 / unscaled.width;
+    const viewport = page.getViewport({ scale });
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
+    const ctx = canvas.getContext("2d");
+    await page.render({ canvasContext: ctx, viewport }).promise;
+    return true;
+  } catch (err) {
+    console.warn("Could not render cover for", fileUrl, err);
+    return false;
+  }
+}
+
+function openModal(book) {
+  lastFocused = document.activeElement;
+  modalTitle.textContent = book.title;
+  modalAuthor.textContent = "by " + book.author;
+  modalFrame.src = book.file;
+  modalDownload.href = book.file;
+  modalDownload.setAttribute("download", book.title + ".pdf");
+  overlay.hidden = false;
+  document.addEventListener("keydown", onKeydown);
+  modalClose.focus();
+}
+
+function closeModal() {
+  overlay.hidden = true;
+  modalFrame.src = "";
+  document.removeEventListener("keydown", onKeydown);
+  if (lastFocused) lastFocused.focus();
+}
+
+function onKeydown(e) {
+  if (e.key === "Escape") closeModal();
+}
+</script>
+</body>
+</html>
